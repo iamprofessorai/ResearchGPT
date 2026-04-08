@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    // Collection: /users/{uid}
+    // Fields: uid, email, displayName, photoURL, role, createdAt
+    //
+    // Collection: /users/{uid}/chats/{chatId}
+    // Fields: id, userId, title, personaId, lastMessageAt, createdAt
+    //
+    // Collection: /users/{uid}/chats/{chatId}/messages/{messageId}
+    // Fields: id, role, content, timestamp, attachments
+    //
+    // Collection: /users/{uid}/personas/{personaId}
+    // Fields: id, userId, name, systemInstruction, isPublic, createdAt
+    //
+    // Collection: /users/{uid}/knowledgeBases/{kbId}
+    // Fields: id, userId, name, urls, description, createdAt
+    //
+    // Collection: /users/{uid}/mcpConfigs/{mcpId}
+    // Fields: id, userId, name, endpoint, apiKey, type, createdAt
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "vapionline123@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidUser(data) {
+      return data.uid is string && data.email is string && data.role in ['admin', 'user'];
+    }
+
+    // Rules
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow create: if isAuthenticated() && isOwner(uid) && isValidUser(request.resource.data);
+      allow update: if isAuthenticated() && isOwner(uid) && isValidUser(request.resource.data) && request.resource.data.role == resource.data.role;
+
+      match /chats/{chatId} {
+        allow read, write: if isOwner(uid);
+        match /messages/{messageId} {
+          allow read, write: if isOwner(uid);
+        }
+      }
+
+      match /personas/{personaId} {
+        allow read: if isOwner(uid) || resource.data.isPublic == true;
+        allow write: if isOwner(uid);
+      }
+
+      match /knowledgeBases/{kbId} {
+        allow read, write: if isOwner(uid);
+      }
+
+      match /mcpConfigs/{mcpId} {
+        allow read, write: if isOwner(uid);
+      }
+    }
+  }
+}

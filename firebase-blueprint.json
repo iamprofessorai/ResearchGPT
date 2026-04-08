@@ -1,0 +1,115 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores user account information and roles",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "user"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role", "createdAt"]
+    },
+    "ChatSession": {
+      "title": "Chat Session",
+      "description": "Represents a conversation thread",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "personaId": { "type": "string" },
+        "lastMessageAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "title", "lastMessageAt", "createdAt"]
+    },
+    "ChatMessage": {
+      "title": "Chat Message",
+      "description": "A single message within a chat session",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "model", "system"] },
+        "content": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "attachments": { "type": "array", "items": { "type": "object" } },
+        "groundingMetadata": { "type": "object" }
+      },
+      "required": ["id", "role", "content", "timestamp"]
+    },
+    "Persona": {
+      "title": "Persona",
+      "description": "Custom AI personality settings",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "systemInstruction": { "type": "string" },
+        "isPublic": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "name", "systemInstruction", "createdAt"]
+    },
+    "KnowledgeBase": {
+      "title": "Knowledge Base",
+      "description": "Collection of URLs for RAG",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "urls": { "type": "array", "items": { "type": "string" } },
+        "description": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "name", "urls", "createdAt"]
+    },
+    "MCPConfig": {
+      "title": "MCP Configuration",
+      "description": "Settings for Model Context Protocol servers",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "endpoint": { "type": "string" },
+        "apiKey": { "type": "string" },
+        "type": { "type": "string", "enum": ["local", "remote"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "name", "endpoint", "type", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": "UserProfile",
+      "description": "User profile data"
+    },
+    "/users/{uid}/chats/{chatId}": {
+      "schema": "ChatSession",
+      "description": "User's chat sessions"
+    },
+    "/users/{uid}/chats/{chatId}/messages/{messageId}": {
+      "schema": "ChatMessage",
+      "description": "Messages in a chat session"
+    },
+    "/users/{uid}/personas/{personaId}": {
+      "schema": "Persona",
+      "description": "User's custom personas"
+    },
+    "/users/{uid}/knowledgeBases/{kbId}": {
+      "schema": "KnowledgeBase",
+      "description": "User's knowledge bases"
+    },
+    "/users/{uid}/mcpConfigs/{mcpId}": {
+      "schema": "MCPConfig",
+      "description": "User's MCP server configurations"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "Nexus AI Engine",
+  "description": "A comprehensive AI orchestration platform featuring multi-model chat, RAG, image/video generation, and real-time audio interactions powered by Gemini.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}
